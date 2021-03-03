@@ -3,6 +3,7 @@
   import slugify from './functions/slugify'
   import { newspaperRef, newspaperRefStatus } from './functions/stores'
   import createNewspaper from './functions/createNewspaper'
+  import postImage from './functions/postImage'
 
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
@@ -11,11 +12,17 @@
   let text = urlParams.get('text')
   $: slug = slugify(title)
   let image = urlParams.get('image')
+  $: imageRef = {}
   let newspaper = urlParams.get('newspaper').replace(/^The\s/i, '')
   let date = urlParams.get('date')
   let page = urlParams.get('page')
   let city = urlParams.get('city')
   let state = urlParams.get('state')
+  let url = urlParams.get('url')
+
+  postImage(image).then((x) => {
+    imageRef = x
+  })
 
   const token = process.env.SANITY_TOKEN
 
@@ -23,6 +30,12 @@
 
   client.fetch(query, { newspaper: newspaper, city: city }).then((x) => {
     newspaperRef.set(x[0]?._id)
+  })
+
+  const queryTest = '*[_type == "newspaperArticle"]'
+
+  client.fetch(queryTest).then((x) => {
+    console.log(x)
   })
 
   const apiUrl = 'https://tuiw9zvo.api.sanity.io/v1/data/mutate/production'
@@ -57,8 +70,20 @@
           precision: 11,
           time: '1879-12-06T04:56:02.000Z',
         },
-        //mainImage: '',
-        //parent: '',
+        file: {
+          _type: 'image',
+          asset: {
+            _ref: 'image-c7214d428f0ae38f343327c3b6c3993618d01beb-543x144-jpg', //imageRef?._id,
+            _type: 'reference',
+          },
+          alt: {
+            en: 'hello',
+          },
+        },
+        parent: {
+          _ref: 'JUTHQdik36nT1WXQUbtsel', //$newspaperRef,
+          _type: 'reference',
+        },
         pageStart: 3,
         paywall: false,
         slug: {
@@ -66,7 +91,7 @@
             current: slug,
           },
         },
-        url: 'https://chroniclingamerica.loc.gov/lccn/sn83035083/1879-11-06/ed-1/seq-3/',
+        source: url,
       },
     },
   ]
@@ -89,6 +114,7 @@
 </script>
 
 <main>
+  <h1>Clip Newspaper Article</h1>
   <form>
     <label for="title">Title</label>
     <input id="title" type="text" bind:value={title} required />
@@ -100,7 +126,7 @@
     <textarea id="text" bind:value={text} />
 
     <label for="newspaper">Newspaper Ref</label>
-    <input id="newspaper" type="text" bind:value={$newspaperRef} required />
+    <input id="newspaper" type="text" bind:value={$newspaperRef} required readonly />
 
     {#if typeof $newspaperRef === 'undefined'}
       <p>Newspaper does not exist</p>
@@ -119,21 +145,33 @@
       </button>
     {/if}
 
+    <label for="image">Image Ref</label>
+    <input id="image" type="text" bind:value={imageRef._id} readonly />
+
     <label for="date">Date</label>
     <input id="date" type="text" bind:value={date} required />
 
     <label for="page">Page Number</label>
     <input id="page" type="number" bind:value={page} required />
 
+    <label for="url">URL</label>
+    <input id="url" type="url" bind:value={url} required />
+
     <button on:click={(e) => handleSubmit(e)}>Save</button>
   </form>
-  <img src={image} />
+  {#if imageRef.url}
+    <img src={imageRef.url} />
+  {/if}
 </main>
 
 <style>
   main {
     display: grid;
     grid-template-columns: 2fr 1fr;
+  }
+
+  h1 {
+    grid-column: 1 / -1;
   }
 
   img {
