@@ -1,6 +1,7 @@
 <script>
   import client from './functions/sanityClient'
   import slugify from './functions/slugify'
+  import { newspaperRef, newspaperRefStatus } from './functions/stores'
   import createNewspaper from './functions/createNewspaper'
 
   const queryString = window.location.search
@@ -15,16 +16,13 @@
   let page = urlParams.get('page')
   let city = urlParams.get('city')
   let state = urlParams.get('state')
-  $: newspaperExists = undefined
 
   const token = process.env.SANITY_TOKEN
 
-  const query = '*[_type == "newspaper"]{...,city->}'
+  const query = '*[_type == "newspaper"  && title.en == $newspaper && city->title.en == $city]'
 
-  newspaperExists = client.fetch(query).then((x) => {
-    let results = x.find((elem) => elem.title.en === title && elem.city.title.en === city)
-
-    return results
+  client.fetch(query, { newspaper: newspaper, city: city }).then((x) => {
+    newspaperRef.set(x[0]?._id)
   })
 
   const apiUrl = 'https://tuiw9zvo.api.sanity.io/v1/data/mutate/production'
@@ -101,17 +99,30 @@
     <label for="text">Text</label>
     <textarea id="text" bind:value={text} />
 
-    <label for="newspaper">Newspaper</label>
-    <input id="newspaper" type="text" bind:value={newspaper} required />
-    {#if typeof newspaperExists === 'undefined'}
-      <p>No newspaper</p>
-      <button on:click={(e) => createNewspaper(e, city)}>Create Newspaper</button>
+    <label for="newspaper">Newspaper Ref</label>
+    <input id="newspaper" type="text" bind:value={$newspaperRef} required />
+
+    {#if typeof $newspaperRef === 'undefined'}
+      <p>Newspaper does not exist</p>
+      <button
+        on:click={(e) => {
+          newspaperRefStatus.set('loading')
+          createNewspaper(e, { city: city, state: state, newspaper: newspaper })
+        }}
+        disabled={$newspaperRefStatus === 'idle' ? false : true}
+      >
+        {#if $newspaperRefStatus === 'loading'}
+          Loading...
+        {:else}
+          Create Newspaper
+        {/if}
+      </button>
     {/if}
 
     <label for="date">Date</label>
     <input id="date" type="text" bind:value={date} required />
 
-    <label for="page">Newspaper</label>
+    <label for="page">Page Number</label>
     <input id="page" type="number" bind:value={page} required />
 
     <button on:click={(e) => handleSubmit(e)}>Save</button>

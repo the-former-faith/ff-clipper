@@ -1,26 +1,96 @@
 import client from './sanityClient'
+import postToSanity from './postToSanity'
+import slugify from './slugify'
+import { newspaperRef, newspaperRefStatus } from './stores'
 import { createMachine, interpret } from 'xstate'
 
-const createNewspaper = (event, cityTitle) => {
+const createNewspaper = (event, data) => {
   event.preventDefault()
 
-  const assignPoint = () => {
-    console.log('moving')
+  const checkForCity = () => {
+    client.fetch(query, data).then((x) => {
+      if (x.length === 0) {
+        console.log('notFound ', x.length)
+        service.send('notFound')
+      } else {
+        service.send({type: 'found', result: x})
+      }
+      return
+    })
   }
 
   //get cities, and create if doesn't exist
-  const query = '*[_type == "location" && type == "city" && title.en == $cityTitle]'
+  const query = '*[_type == "location" && type == "city" && title.en == $city && parent->title.en == $state]'
 
-  const checkForCity = client.fetch(query, {cityTitle: cityTitle}).then((x) => {
-    console.log('city: ', x)
-    if (x.length === 0) {
-      service.send('notFound')
-    } else {
-      service.send('found')
-    }
-    return
-  })
+  const createCity = () => {
+    client.fetch('*[_type == "location" && type == "state" && title.en == $state]', data).then((x) => {
+      return x[0]
+    })
+    .then(y => {
+      return postToSanity([
+        {
+          create: {
+            _type: 'location',
+            title: {
+              en: data.city,
+            },
+            type: 'city',
+            parent: {
+              _ref: y._id,
+              _type: 'reference'
+            },
+            slug: {
+              en: {
+                current: `${slugify(data.city)}-${slugify(y.title.en)}`,
+              },
+            }
+          },
+        }
+      ])
+    }).then(x => service.send(x))
+  }
 
+  const success = (context, event) => {
+    console.log('Success: ', event)
+  }
+
+  const error = (context, event) => {
+    console.log('Error: ', event)
+  }
+  
+  const postNewspaper = (context, event) => {
+    console.log(event)
+    postToSanity([
+      {
+        create: {
+          _type: 'newspaper',
+          title: {
+            en: data.newspaper,
+          },
+          city: {
+            _ref: event.result[0]._id,
+            _type: 'reference'
+          },
+          slug: {
+            en: {
+              current: `${slugify(data.newspaper)}-${slugify(data.city)}`,
+            },
+          }
+        },
+      }
+    ]).then(x => service.send(x))
+  }
+
+  const fetchNewspaper = () => {
+    const query = '*[_type == "newspaper"  && title.en == $newspaper && city->title.en == $city]'
+
+    client.fetch(query, { newspaper: data.newspaper, city: data.city }).then((x) => {
+      newspaperRef.set(x[0]?._id)
+      newspaperRefStatus.set('loaded')
+    })
+  }
+
+  //Save city to context
   const machine = createMachine({
     id: 'toggle',
     initial: 'idle',
@@ -36,33 +106,46 @@ const createNewspaper = (event, cityTitle) => {
       checkForCity: { 
         on: { 
           notFound: {
-            actions: assignPoint,
+            actions: createCity,
             target: 'createCity',
           },
           found: {
-            actions: assignPoint,
-            target: 'createNewspaper',
+            actions: postNewspaper,
+            target: 'postNewspaper',
           },
         } 
       },
       createCity: { 
         on: { 
           success: {
-            actions: assignPoint,
-            target: 'createNewspaper',
+            actions: checkForCity,
+            target: 'checkForCity',
           },
         } 
       },
-      createNewspaper: { 
+      postNewspaper: { 
         on: { 
           success: {
-            actions: assignPoint,
-            target: 'success',
+            actions: fetchNewspaper,
+            target: 'fetchNewspaper',
+          },
+          error: {
+            actions: error,
+            target: 'idle',
           },
         } 
       },
-      success: { 
-
+      fetchNewspaper: { 
+        on: { 
+          notFound: {
+            actions: error,
+            target: 'idle',
+          },
+          found: {
+            actions: success,
+            target: 'idle',
+          },
+        } 
       },
     }
   })
@@ -74,7 +157,6 @@ const createNewspaper = (event, cityTitle) => {
     
   service.send('newspaperMissing')
 
-  //Create newspaper
 }
 
 export default createNewspaper
