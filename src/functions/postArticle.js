@@ -33,7 +33,7 @@ const postArticle = (event, data) => {
         date: {
           _type: 'dateObject',
           precision: 11,
-          time: `${data.date}T00:00:00.000Z`
+          time: data.date
         },
         file: {
           _type: 'image',

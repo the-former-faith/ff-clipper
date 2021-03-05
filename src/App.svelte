@@ -58,7 +58,7 @@
     <textarea id="text" bind:value={text} />
 
     <label for="newspaper">Newspaper Ref</label>
-    <input id="newspaper" type="text" bind:value={$newspaperRef} required readonly />
+    <input id="newspaper" type="text" bind:value={$newspaperRef} required />
 
     {#if typeof $newspaperRef === 'undefined'}
       <p>Newspaper does not exist</p>
@@ -163,6 +163,7 @@
   }
 
   .dialog {
+    text-align: center;
     position: fixed;
     top: 50%;
     left: 50%;
