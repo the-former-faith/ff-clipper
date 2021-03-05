@@ -10,8 +10,6 @@ const client = sanityClient({
 
 const postImage = (image) => fetch(image)
   .then((response) => response.blob())
-  .then(blob => client.assets.upload('image', blob, {
-    filename: 'myimage.jpg',
-  }))
+  .then(blob => client.assets.upload('image', blob))
 
 export default postImage

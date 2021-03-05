@@ -90,7 +90,6 @@ const createNewspaper = (event, data) => {
     })
   }
 
-  //Save city to context
   const machine = createMachine({
     id: 'toggle',
     initial: 'idle',

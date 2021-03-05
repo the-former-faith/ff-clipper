@@ -4,7 +4,7 @@ const sanityClient = client({
   projectId: 'tuiw9zvo',
   dataset: 'production',
   withCredentials: true,
-  useCdn: false,
+  useCdn: true,
 })
 
 export default sanityClient
