@@ -134,7 +134,7 @@ const createNewspaper = (event, data) => {
           },
         } 
       },
-      fetchNewspaper: { 
+      fetchNewspaper: { //Probably can replace this step, now that I have return IDs turned on from Sanity API, like I did with article on submission
         on: { 
           notFound: {
             actions: error,

@@ -1,5 +1,5 @@
 const token = process.env.SANITY_TOKEN
-const apiUrl = 'https://tuiw9zvo.api.sanity.io/v1/data/mutate/production'
+const apiUrl = 'https://tuiw9zvo.api.sanity.io/v1/data/mutate/production?returnIds=true'
 
 const postToSanity = (mutations) => fetch(apiUrl, {
   method: 'post',

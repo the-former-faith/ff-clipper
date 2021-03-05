@@ -1,5 +1,5 @@
 import postToSanity from './postToSanity'
-import { saveStatus } from './stores'
+import { saveStatus, articleRef } from './stores'
 import { createMachine, interpret } from 'xstate'
 
 const postArticle = (event, data) => {
@@ -62,7 +62,12 @@ const postArticle = (event, data) => {
   ]
 
   const saveData = () => {
-    postToSanity(mutations).then(x => service.send(x))
+    postToSanity(mutations).then(x => {
+      console.log(x)
+      articleRef.set(x.result.results[0].id)
+      navigator.clipboard.writeText(x.result.results[0].id)
+      service.send(x)
+    })
   }
 
   const success = () => {

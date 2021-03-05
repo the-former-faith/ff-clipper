@@ -1,7 +1,7 @@
 <script>
   import client from './functions/sanityClient'
   import slugify from './functions/slugify'
-  import { newspaperRef, newspaperRefStatus, saveStatus } from './functions/stores'
+  import { newspaperRef, newspaperRefStatus, saveStatus, articleRef } from './functions/stores'
   import createNewspaper from './functions/createNewspaper'
   import postImage from './functions/postImage'
   import postArticle from './functions/postArticle'
@@ -109,8 +109,9 @@
     <div class="dialog-wrapper">
       <div class="dialog">
         <h2>Success!</h2>
+        <p>Article Ref ID copied to clipboard!</p>
         <button on:click={() => window.history.go(-1)}>Go back to Newspapers.com</button>
-        <!--<a>See in CMS</a>-->
+        <a href="https://admin.theformer.faith/desk/newspaperArticle;{$articleRef}">See in CMS</a>
       </div>
     </div>
   {/if}
