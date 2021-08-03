@@ -5,6 +5,21 @@ import { createMachine, interpret } from 'xstate'
 const postArticle = (event, data) => {
   event.preventDefault()
 
+  const imageMutation = (d) => {
+    const file = {
+      _type: 'image',
+      asset: {
+        _ref: d.imageRef,
+        _type: 'reference',
+      },
+      alt: {
+        en: d.alt,
+      },
+    }
+
+    return file
+  }
+
   const mutations = [
     {
       create: {
@@ -35,16 +50,7 @@ const postArticle = (event, data) => {
           precision: 11,
           time: data.date
         },
-        file: {
-          _type: 'image',
-          asset: {
-            _ref: data.imageRef,
-            _type: 'reference',
-          },
-          alt: {
-            en: data.alt,
-          },
-        },
+        ...(data.imageRef && imageMutation(data) ),
         parent: {
           _ref: data.newspaperRef,
           _type: 'reference',
