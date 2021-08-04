@@ -3,19 +3,16 @@
   import slugify from './functions/slugify'
   import { newspaperRef, newspaperRefStatus, saveStatus, articleRef } from './functions/stores'
   import createNewspaper from './functions/createNewspaper'
-  import postImage from './functions/postImage'
   import postArticle from './functions/postArticle'
 
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
 
-  fetch(`/.netlify/functions/post_image?url=${"dog"}`).then(a => console.log( a.json() ))
-
   let title = urlParams.get('title')
   let text = urlParams.get('text')
   $: slug = slugify(title)
   let image = urlParams.get('image')
-  let imageRef = {}
+  $: imageRef = {}
   let newspaper = urlParams.get('newspaper').replace(/^The\s/i, '')
   let date = urlParams.get('date')
   let page = urlParams.get('page')
@@ -36,9 +33,9 @@
     url: url,
   }
 
-  postImage(image).then((x) => {
-    imageRef = x
-  })
+  fetch(`/.netlify/functions/post_image?url=${encodeURIComponent(image)}`)
+    .then(response => response.json())
+    .then(x => imageRef = x.ref)
 
   const query = '*[_type == "newspaper"  && title.en == $newspaper && city->title.en == $city]'
 
@@ -49,6 +46,7 @@
 
 <main>
   <h1>Clip Newspaper Article {$saveStatus}</h1>
+
   <form>
     <label for="title">Title</label>
     <input id="title" type="text" bind:value={title} required />

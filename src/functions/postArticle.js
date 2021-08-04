@@ -69,7 +69,6 @@ const postArticle = (event, data) => {
 
   const saveData = () => {
     postToSanity(mutations).then(x => {
-      console.log(x)
       articleRef.set(x.result.results[0].id)
       navigator.clipboard.writeText(x.result.results[0].id)
       service.send(x)
