@@ -13,7 +13,7 @@ const client = sanityClient({
 
 exports.handler = async function (event) {
 
-  console.log(token)
+  //console.log(event.queryStringParameters.url)
 
   const image = await fetch(url)
   .catch(error => {

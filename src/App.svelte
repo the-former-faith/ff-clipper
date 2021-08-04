@@ -9,6 +9,8 @@
   const queryString = window.location.search
   const urlParams = new URLSearchParams(queryString)
 
+  fetch(`/.netlify/functions/post_image?url=${"dog"}`).then(a => console.log( a.json() ))
+
   let title = urlParams.get('title')
   let text = urlParams.get('text')
   $: slug = slugify(title)
