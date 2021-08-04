@@ -106,9 +106,11 @@
       </button>
     </footer>
   </form>
+  
   {#if imageRef.url}
     <img src={imageRef.url} {alt} />
   {/if}
+
   {#if $saveStatus === 'success'}
     <div class="dialog-wrapper">
       <div class="dialog">
@@ -119,6 +121,7 @@
       </div>
     </div>
   {/if}
+
 </main>
 
 <style>

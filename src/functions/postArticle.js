@@ -6,7 +6,8 @@ const postArticle = (event, data) => {
   event.preventDefault()
 
   const imageMutation = (d) => {
-    const file = {
+
+    return {
       _type: 'image',
       asset: {
         _ref: d.imageRef,
@@ -17,7 +18,6 @@ const postArticle = (event, data) => {
       },
     }
 
-    return file
   }
 
   const mutations = [
@@ -50,7 +50,7 @@ const postArticle = (event, data) => {
           precision: 11,
           time: data.date
         },
-        ...(data.imageRef && imageMutation(data) ),
+        file: data.imageRef ? imageMutation(data) : undefined,
         parent: {
           _ref: data.newspaperRef,
           _type: 'reference',
