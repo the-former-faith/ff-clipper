@@ -33,7 +33,11 @@
     url: url,
   }
 
-  fetch(`/.netlify/functions/post_image?url=${encodeURIComponent(image)}`)
+  const replaceUserId = (x) => x.replace(/(?<=user=)(.*?)(?=&)/, 0)
+
+  const imageWithNewId = replaceUserId(image)
+
+  fetch(`/.netlify/functions/post_image?url=${encodeURIComponent(imageWithNewId)}`)
     .then(response => response.json())
     .then(x => imageRef = x.ref)
 

@@ -59,7 +59,6 @@ const createNewspaper = (event, data) => {
   }
   
   const postNewspaper = (context, event) => {
-    console.log(event)
     postToSanity([
       {
         create: {
