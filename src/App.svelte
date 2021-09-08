@@ -9,7 +9,7 @@
   const urlParams = new URLSearchParams(queryString)
 
   let title = urlParams.get('title')
-  let text = urlParams.get('text')
+  let text = `<p>${urlParams.get('text')}</p>`
   $: slug = slugify(title)
   let image = urlParams.get('image')
   $: imageRef = {}
@@ -59,7 +59,7 @@
     <input id="slug" type="text" bind:value={slug} required />
 
     <label for="text">Text</label>
-    <textarea id="text" bind:value={text} />
+    <div id="text" contenteditable="true" bind:innerHTML={text} on:input={e => console.log(e)}></div>
 
     <label for="newspaper">Newspaper Ref</label>
     <input id="newspaper" type="text" bind:value={$newspaperRef} required />
@@ -141,7 +141,7 @@
   }
 
   input,
-  textarea {
+  [contenteditable] {
     margin-top: 0.25rem;
     width: 100%;
     border-radius: 0;

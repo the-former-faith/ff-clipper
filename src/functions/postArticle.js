@@ -1,6 +1,35 @@
 import postToSanity from './postToSanity'
 import { saveStatus, articleRef } from './stores'
 import { createMachine, interpret } from 'xstate'
+import blockTools from '@sanity/block-tools'
+import Schema from '@sanity/schema'
+
+const defaultSchema = Schema.compile({
+name: 'myBlog',
+types: [
+  {
+    type: 'object',
+    name: 'blogPost',
+    fields: [
+      {
+        title: 'Title',
+        type: 'string',
+        name: 'title'
+      },
+      {
+        title: 'Body',
+        name: 'body',
+        type: 'array',
+        of: [{type: 'block'}]
+      }
+    ]
+  }
+]
+})
+
+// The compiled schema type for the content type that holds the block array
+const blockContentType = defaultSchema.get('blogPost').fields
+  .find(field => field.name === 'body').type
 
 const postArticle = (event, data) => {
   event.preventDefault()
@@ -28,22 +57,10 @@ const postArticle = (event, data) => {
           en: data.title,
         },
         content: {
-          en: [
-            {
-              _key: '700f5780a95b',
-              _type: 'block',
-              children: [
-                {
-                  _key: 'c231ef729969',
-                  _type: 'span',
-                  marks: [],
-                  text: data.text,
-                },
-              ],
-              markDefs: [],
-              style: 'normal',
-            },
-          ],
+          en: blockTools.htmlToBlocks(
+            data.text,
+            blockContentType
+          ),
         },
         date: {
           _type: 'dateObject',
